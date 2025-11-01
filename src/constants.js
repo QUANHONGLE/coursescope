@@ -5,7 +5,7 @@ export const COURSES = [
     title: "Program Design I",
     credits: 3,
     level: 100,
-    difficulty: "Easy",
+    difficulty: "Light",
     description: "Introduction to programming and problem solving.",
     prereqChain: "None",
     instructors: ["Smith", "Lee"],
@@ -60,7 +60,7 @@ export const COURSES = [
     title: "Communication and Ethics",
     credits: 3,
     level: 300,
-    difficulty: "Easy",
+    difficulty: "Light",
     description: "Technical communication and ethical practice.",
     prereqChain: "Sophomore standing",
     instructors: ["Flores", "Singh"],
@@ -79,8 +79,8 @@ export const COURSES = [
 ];
 
 export const DIFFICULTY_INFO = {
-  Easy: {
-    label: "Easy",
+  Light: {
+    label: "Light",
     desc: "Higher historic A/B rates, lighter expected workload.",
   },
   Moderate: {
@@ -94,4 +94,4 @@ export const DIFFICULTY_INFO = {
 };
 
 export const LEVELS = [100, 200, 300, 400];
-export const DIFFICULTIES = ["Easy", "Moderate", "Challenging"];
+export const DIFFICULTIES = ["Light", "Moderate", "Challenging"];

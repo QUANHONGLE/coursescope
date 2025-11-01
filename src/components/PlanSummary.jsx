@@ -7,12 +7,26 @@ const PlanSummary = ({ selected, onRemove }) => {
     () => selected.reduce((sum, c) => sum + c.credits, 0),
     [selected]
   );
-  
+
   const workload = useMemo(() => {
-    const counts = { Easy: 0, Moderate: 0, Challenging: 0 };
+    const counts = { Light: 0, Moderate: 0, Challenging: 0 };
     selected.forEach((c) => counts[c.difficulty]++);
-    return `${counts.Challenging} challenging / ${counts.Moderate} moderate / ${counts.Easy} easy`;
+    return `${counts.Challenging} challenging / ${counts.Moderate} moderate / ${counts.Light} Light`;
   }, [selected]);
+
+  // Get underline color based on course level
+  const getUnderlineColor = (level) => {
+    if (level <= 100) {
+      return "border-green-300";
+    } else if (level === 200) {
+      return "border-lime-300";
+    } else if (level === 300) {
+      return "border-yellow-300";
+    } else if (level >= 400) {
+      return "border-red-300";
+    }
+    return "border-gray-300"; // fallback
+  };
 
   return (
     <section className="space-y-3">
@@ -42,11 +56,13 @@ const PlanSummary = ({ selected, onRemove }) => {
                 className="rounded-2xl border bg-white p-4 flex flex-col gap-2 relative"
               >
                 <div>
-                  <div className="text-sm text-gray-500">{c.code}</div>
-                  <div className="font-medium">{c.title}</div>
+                  <div className={`text-lg font-bold pb-1 border-b-2 ${getUnderlineColor(c.level)}`}>
+                    {c.code}
+                  </div>
+                  <div className="text-sm text-gray-600 mt-1.5">{c.title}</div>
                   <div className="flex flex-wrap gap-1 mt-2">
                     <Pill type="credits" value={c.credits}>
-                      {c.credits} cr
+                      {c.credits} Credit Hours
                     </Pill>
                     <Pill type="level" value={c.level}>
                       Level {c.level}

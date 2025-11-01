@@ -1,11 +1,11 @@
 import { Chip, Pill } from "./ui";
 
 const LEVELS = [100, 200, 300, 400];
-const DIFFICULTIES = ["Easy", "Moderate", "Challenging"];
+const DIFFICULTIES = ["Light", "Moderate", "Challenging"];
 const CREDITS = [0, 1, 2, 3, 4];
 const DIFFICULTY_INFO = {
-  Easy: {
-    label: "Easy",
+  Light: {
+    label: "Light",
     desc: "Higher historic A/B rates, lighter expected workload.",
   },
   Moderate: {
@@ -54,7 +54,7 @@ const FilterBar = ({
                 onClick={() => toggleCredits(c)}
                 title={`Filter by ${c} hour${c !== 1 ? 's' : ''}`}
               >
-                {c} hr{c !== 1 ? 's' : ''}
+                {c} hour{c !== 1 ? 's' : ''}
               </Chip>
             ))}
           </div>
@@ -77,7 +77,7 @@ const FilterBar = ({
         </div>
         <div className="col-span-1">
           <label className="text-xs font-medium text-gray-600">
-            Course Difficulty
+            Course Word Load
           </label>
           <div className="mt-1 flex flex-wrap gap-2">
             {DIFFICULTIES.map((d) => (

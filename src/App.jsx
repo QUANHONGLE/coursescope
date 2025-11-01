@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import Header from "./components/Header";
 import FilterBar from "./components/FilterBar";
@@ -8,6 +8,7 @@ import { CourseDetailModal, GradeDistributionModal } from "./components/Modals";
 import OnboardingSection from "./components/OnboardingSection";
 import MajorSelection from "./components/MajorSelection";
 import DiagnosticPanel from "./components/DiagnosticPanel";
+import RequiredCoursesChecklist from "./components/RequiredCoursesChecklist";
 
 const API_URL = "http://127.0.0.1:5001/api";
 
@@ -20,10 +21,14 @@ export default function App() {
   const [selectedMajor, setSelectedMajor] = useState(null);
   const [majorConfirmed, setMajorConfirmed] = useState(false);
   const [requiredCourses, setRequiredCourses] = useState([]);
+  const [electiveCourses, setElectiveCourses] = useState([]);
   const [completedCourses, setCompletedCourses] = useState(null);
+  const [inProgressCourses, setInProgressCourses] = useState(null); // New state for in-progress courses
   const [allCourses, setAllCourses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [onboardingCollapsed, setOnboardingCollapsed] = useState(false);
+  const [inProgressSelectionCollapsed, setInProgressSelectionCollapsed] = useState(true); // New state for in-progress modal
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   const [detailOpen, setDetailOpen] = useState(false);
   const [gradesOpen, setGradesOpen] = useState(false);
@@ -33,6 +38,13 @@ export default function App() {
   useEffect(() => {
     fetchCourses();
   }, []);
+
+  // Collapse sidebar when entering edit mode (onboarding expanded)
+  useEffect(() => {
+    if (!onboardingCollapsed) {
+      setSidebarCollapsed(true);
+    }
+  }, [onboardingCollapsed]);
 
   const fetchCourses = async () => {
     try {
@@ -55,13 +67,15 @@ export default function App() {
   const handleMajorSelect = async (major) => {
     setSelectedMajor(major);
     setMajorConfirmed(true);
-    
+
     // Fetch required courses for this major
     try {
       const response = await fetch(`${API_URL}/majors/${major.id}/requirements`);
       const data = await response.json();
       setRequiredCourses(data.requiredCourses);
+      setElectiveCourses(data.electiveCourses || []);
       console.log("✓ Loaded major requirements:", data.requiredCourses.length);
+      console.log("✓ Loaded elective courses:", data.electiveCourses?.length || 0);
     } catch (error) {
       console.error("✗ Error fetching major requirements:", error);
     }
@@ -70,7 +84,9 @@ export default function App() {
   const handleChangeMajor = () => {
     setMajorConfirmed(false);
     setCompletedCourses(null);
+    setInProgressCourses(null); // Reset in-progress courses
     setOnboardingCollapsed(false);
+    setInProgressSelectionCollapsed(true); // Reset in-progress modal state
     setSelected([]);
   };
 
@@ -81,6 +97,13 @@ export default function App() {
     console.log("📋 Values:", Array.from(completed));
     setCompletedCourses(completed);
     setOnboardingCollapsed(true);
+    setInProgressSelectionCollapsed(false); // Show in-progress modal after onboarding
+  };
+
+  const handleInProgressComplete = (inProgress) => {
+    console.log("📋 In-progress courses received:", inProgress);
+    setInProgressCourses(inProgress);
+    setInProgressSelectionCollapsed(true); // Collapse in-progress modal
   };
 
   const toggleLevel = (lvl) =>
@@ -123,7 +146,9 @@ export default function App() {
         ? difficultyFilters.has(c.difficulty)
         : true;
       const creditsHit = creditsFilters.size
-        ? creditsFilters.has(c.credits)
+        ? creditsFilters.has(c.credits) ||
+          (c.creditsUndergrad && creditsFilters.has(c.creditsUndergrad)) ||
+          (c.creditsGrad && creditsFilters.has(c.creditsGrad))
         : true;
       return searchHit && levelHit && diffHit && creditsHit;
     });
@@ -131,23 +156,25 @@ export default function App() {
 
   // Filter eligible courses based on completed prerequisites
   const eligibleCourses = useMemo(() => {
-    if (completedCourses === null) return filtered;
+    if (completedCourses === null || inProgressCourses === null) return filtered;
     
-    // Convert Set to Array for easier comparison
+    // Convert Sets to Arrays for easier comparison
     const completedCodesArray = Array.from(completedCourses);
+    const inProgressCodesArray = Array.from(inProgressCourses);
     
     // Get list of course codes already in the plan
     const selectedCodesArray = selected.map(c => c.code);
     
     console.log("🔍 Filtering eligible courses...");
     console.log("🔍 Completed courses:", completedCodesArray);
+    console.log("🔍 In-progress courses:", inProgressCodesArray);
     console.log("🔍 Courses in plan:", selectedCodesArray);
     console.log("🔍 Total filtered courses:", filtered.length);
     
     const eligible = filtered.filter((course) => {
-      // Skip courses that are already completed
-      if (completedCodesArray.includes(course.code)) {
-        console.log(`⏭️  Skipping ${course.code} - already completed`);
+      // Skip courses that are already completed or in progress
+      if (completedCodesArray.includes(course.code) || inProgressCodesArray.includes(course.code)) {
+        console.log(`⏭️  Skipping ${course.code} - already completed or in progress`);
         return false;
       }
       
@@ -157,30 +184,40 @@ export default function App() {
         return false;
       }
       
-      // If no prerequisites, course is eligible
-      if (!course.prerequisites || course.prerequisites.length === 0) {
+      // Check prerequisites using grouped logic
+      // prerequisiteGroups is an array of arrays: [[A, B], [C], [D, E]]
+      // Groups are AND'd together, items within a group are OR'd
+      if (!course.prerequisiteGroups || course.prerequisiteGroups.length === 0) {
         console.log(`✅ ${course.code} - no prerequisites needed`);
         return true;
       }
-      
-      // Check if all prerequisites are completed
-      const allPrereqsMet = course.prerequisites.every((prereq) => 
-        completedCodesArray.includes(prereq)
-      );
-      
-      if (allPrereqsMet) {
-        console.log(`✅ ${course.code} - all prerequisites met:`, course.prerequisites);
-      } else {
-        const missingPrereqs = course.prerequisites.filter(p => !completedCodesArray.includes(p));
-        console.log(`❌ ${course.code} - missing prerequisites:`, missingPrereqs);
+
+      let prereqsMet = true;
+      const missingGroups = [];
+
+      for (const group of course.prerequisiteGroups) {
+        // For each group, at least ONE course must be completed OR in progress (OR within group)
+        const groupMet = group.some((prereq) => 
+          completedCodesArray.includes(prereq) || inProgressCodesArray.includes(prereq)
+        );
+        if (!groupMet) {
+          prereqsMet = false;
+          missingGroups.push(group);
+        }
       }
-      
-      return allPrereqsMet;
+
+      if (prereqsMet) {
+        console.log(`✅ ${course.code} - prerequisites met:`, course.prerequisitesFormatted);
+      } else {
+        console.log(`❌ ${course.code} - missing prerequisites:`, course.prerequisitesFormatted);
+      }
+
+      return prereqsMet;
     });
     
     console.log("🔍 Eligible courses count:", eligible.length);
     return eligible;
-  }, [filtered, completedCourses, selected]);
+  }, [filtered, completedCourses, inProgressCourses, selected]);
 
   const addToPlan = (course) =>
     setSelected((prev) =>
@@ -229,55 +266,108 @@ export default function App() {
           <MajorSelection onSelectMajor={handleMajorSelect} selectedMajor={selectedMajor} />
         </main>
       ) : (
-        <main className="mx-auto max-w-6xl px-4 py-6 md:py-8 space-y-6">
-          <OnboardingSection
-            courses={requiredCourses}
-            onComplete={handleOnboardingComplete}
-            completedCourses={completedCourses}
-            isCollapsed={onboardingCollapsed}
-            setIsCollapsed={setOnboardingCollapsed}
-          />
-          
-          <AnimatePresence>
-            {completedCourses !== null && onboardingCollapsed && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.3 }}
-                className="space-y-6"
-              >
-                <FilterBar
-                  search={search}
-                  setSearch={setSearch}
-                  levelFilters={levelFilters}
-                  toggleLevel={toggleLevel}
-                  difficultyFilters={difficultyFilters}
-                  toggleDifficulty={toggleDifficulty}
-                  creditsFilters={creditsFilters}
-                  toggleCredits={toggleCredits}
-                  clearAll={clearAll}
-                />
+        <div className="flex h-[calc(100vh-80px)]">
+          {/* Requirements Checklist - Fixed Left Panel */}
+          {completedCourses !== null && inProgressCourses !== null && (
+            <RequiredCoursesChecklist
+              requiredCourses={requiredCourses}
+              electiveCourses={electiveCourses}
+              completedCourses={completedCourses}
+              inProgressCourses={inProgressCourses} // Pass in-progress courses
+              selectedCourses={selected}
+              onCourseClick={openDetail}
+              isEditingCompleted={!onboardingCollapsed || !inProgressSelectionCollapsed} // Adjust edit mode logic
+              collapsed={sidebarCollapsed}
+              setCollapsed={setSidebarCollapsed}
+            />
+          )}
 
-                <div className="grid gap-6 lg:grid-cols-3">
-                  <div className="lg:col-span-2 space-y-6">
-                    <EligibleCourses
-                      courses={eligibleCourses}
-                      onAdd={addToPlan}
-                      onOpenDetail={openDetail}
-                      onOpenGrades={openGrades}
-                    />
-                  </div>
-                  <div className="lg:col-span-1">
-                    <div className="bg-white rounded-2xl border shadow-sm p-4 sticky top-[88px]">
-                      <PlanSummary selected={selected} onRemove={removeFromPlan} />
+          {/* Main Content */}
+          <motion.main
+            className="flex-1 overflow-y-auto px-4 py-6 md:py-8 space-y-6"
+            layout="position"
+            transition={{
+              layout: {
+                type: "spring",
+                stiffness: 300,
+                damping: 30,
+                mass: 0.8
+              }
+            }}
+          >
+            <div className="mx-auto max-w-6xl">
+              <OnboardingSection
+                courses={allCourses}
+                onComplete={handleOnboardingComplete}
+                completedCourses={completedCourses}
+                isCollapsed={onboardingCollapsed}
+                setIsCollapsed={setOnboardingCollapsed}
+              />
+
+              {/* New In-Progress Selection Section */}
+              {onboardingCollapsed && completedCourses !== null && (
+                <OnboardingSection // Reusing OnboardingSection for in-progress selection
+                  courses={allCourses} // All courses for in-progress selection
+                  onComplete={handleInProgressComplete}
+                  completedCourses={inProgressCourses} // Use inProgressCourses for this section
+                  isCollapsed={inProgressSelectionCollapsed}
+                  setIsCollapsed={setInProgressSelectionCollapsed}
+                  title="In Progress Courses"
+                  description="Choose all courses you are currently taking."
+                  buttonText="Confirm"
+                  excludeCourses={completedCourses} // Exclude already completed courses
+                  showCompletedFirst={true} // Show completed courses at the top
+                  enforcePrerequisites={true} // Only show courses with prerequisites met
+                  completedCoursesSet={completedCourses} // Pass completed courses for prerequisite checking
+                />
+              )}
+
+              <AnimatePresence>
+                {completedCourses !== null && inProgressCourses !== null && onboardingCollapsed && inProgressSelectionCollapsed && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    transition={{ duration: 0.3 }}
+                    className="space-y-6"
+                  >
+                    <div>
+                      <FilterBar
+                        search={search}
+                        setSearch={setSearch}
+                        levelFilters={levelFilters}
+                        toggleLevel={toggleLevel}
+                        difficultyFilters={difficultyFilters}
+                        toggleDifficulty={toggleDifficulty}
+                        creditsFilters={creditsFilters}
+                        toggleCredits={toggleCredits}
+                        clearAll={clearAll}
+                      />
                     </div>
-                  </div>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </main>
+
+                    <div className="grid gap-6 lg:grid-cols-3">
+                      <div className="lg:col-span-2 space-y-6">
+                        <EligibleCourses
+                          courses={eligibleCourses}
+                          requiredCourses={requiredCourses}
+                          electiveCourses={electiveCourses}
+                          onAdd={addToPlan}
+                          onOpenDetail={openDetail}
+                          onOpenGrades={openGrades}
+                        />
+                      </div>
+                      <div className="lg:col-span-1">
+                        <div className="bg-white rounded-2xl border shadow-sm p-4 sticky top-0">
+                          <PlanSummary selected={selected} onRemove={removeFromPlan} />
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          </motion.main>
+        </div>
       )}
 
       <CourseDetailModal

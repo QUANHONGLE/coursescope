@@ -2,15 +2,15 @@ import clsx from "clsx";
 
 export const Pill = ({ children, type = "default", value }) => {
   const getColorClasses = () => {
-    // For difficulty pills
+    // For difficulty pills (or course load)
     if (type === "difficulty") {
       const difficulty = value || children;
       if (typeof difficulty === 'string') {
-        if (difficulty.includes("Easy")) {
+        if (difficulty.includes("Light") || difficulty.includes("Light")) {
           return "bg-green-100 border-green-300 text-green-800";
         } else if (difficulty.includes("Moderate")) {
           return "bg-yellow-100 border-yellow-300 text-yellow-800";
-        } else if (difficulty.includes("Challenging")) {
+        } else if (difficulty.includes("Challenging") || difficulty.includes("Heavy")) {
           return "bg-red-100 border-red-300 text-red-800";
         }
       }
@@ -82,7 +82,7 @@ export const Chip = ({ active, onClick, children, title, type = "default" }) => 
     
     // For credits chips
     if (type === "credits") {
-      // Extract number from children like "0 hrs", "1 hr", "2 hrs", etc.
+      // Extract number from children like "0 hours", "1 hour", "2 hours", etc.
       const childText = typeof children === 'string' ? children : String(children);
       const creditsMatch = childText.match(/\d+/);
       const credits = creditsMatch ? parseInt(creditsMatch[0]) : 0;
@@ -118,7 +118,7 @@ export const Chip = ({ active, onClick, children, title, type = "default" }) => 
     // For difficulty chips
     if (type === "difficulty") {
       const difficulty = children;
-      if (difficulty === "Easy") {
+      if (difficulty === "Light") {
         return {
           inactive: "bg-white hover:bg-green-50 hover:border-green-400 hover:text-green-700 border-gray-300",
           active: "bg-green-600 text-white border-green-600"
