@@ -117,13 +117,14 @@ const OnboardingSection = ({
   };
 
   return (
-    <motion.div 
+    <>
+    <motion.div
       className="bg-white rounded-2xl border shadow-sm overflow-hidden"
       layout
       transition={{ duration: 0.3, ease: "easeInOut" }}
     >
       <motion.div layout className="p-4">
-        <div className="flex items-center justify-between">
+        <div className="flex items-start justify-between">
           <div>
             <h2 className="text-lg font-semibold">
               {isCollapsed ? title : `Select ${title}`}
@@ -162,7 +163,7 @@ const OnboardingSection = ({
               !isCollapsed && hasViolations && !skipValidation
                 ? {
                     x: [0, -10, 10, -10, 10, 0],
-                    backgroundColor: ["#ef4444", "#dc2626", "#ef4444"]
+                    backgroundColor: ["#f59e0b", "#d97706", "#f59e0b"]
                   }
                 : {
                     backgroundColor: "#000000"
@@ -191,10 +192,10 @@ const OnboardingSection = ({
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.3 }}
-              className="mt-3 p-3 bg-red-50 border border-red-200 rounded-xl"
+              className="mt-3 p-3 bg-yellow-50 border border-yellow-300 rounded-xl"
             >
-              <div className="text-sm text-red-800">
-                <p className="font-semibold mb-2">Missing Prerequisites:</p>
+              <div className="text-sm text-yellow-800">
+                <p className="font-semibold mb-2">⚠️ Missing Prerequisites:</p>
                 <div className="space-y-2">
                   {violations.map((violation, idx) => (
                     <div key={idx} className="text-xs">
@@ -202,19 +203,19 @@ const OnboardingSection = ({
                       <div className="pl-2 space-y-1">
                         {violation.missingGroups.map((group, groupIdx) => (
                           <div key={groupIdx} className="flex flex-wrap items-center gap-1">
-                            <span className="text-red-600">Missing:</span>
-                            {group.length > 1 && <span className="text-red-600">(</span>}
+                            <span className="text-yellow-700">Missing:</span>
+                            {group.length > 1 && <span className="text-yellow-700">(</span>}
                             {group.map((prereq, prereqIdx) => (
                               <span key={prereqIdx} className="inline-flex items-center gap-1">
-                                <span className="px-1.5 py-0.5 bg-red-100 rounded text-red-900 font-medium">
+                                <span className="px-1.5 py-0.5 bg-yellow-100 border border-yellow-400 rounded text-yellow-900 font-medium">
                                   {prereq}
                                 </span>
                                 {prereqIdx < group.length - 1 && (
-                                  <span className="text-red-600">or</span>
+                                  <span className="text-yellow-700">or</span>
                                 )}
                               </span>
                             ))}
-                            {group.length > 1 && <span className="text-red-600">)</span>}
+                            {group.length > 1 && <span className="text-yellow-700">)</span>}
                           </div>
                         ))}
                       </div>
@@ -223,14 +224,14 @@ const OnboardingSection = ({
                 </div>
 
                 {/* Skip Validation Checkbox */}
-                <label className="flex items-center gap-2 mt-3 pt-3 border-t border-red-300 cursor-pointer">
+                <label className="flex items-center gap-2 mt-3 pt-3 border-t border-yellow-400 cursor-pointer">
                   <input
                     type="checkbox"
                     checked={skipValidation}
                     onChange={(e) => setSkipValidation(e.target.checked)}
-                    className="h-4 w-4 rounded border-red-300 text-red-600 focus:ring-red-500"
+                    className="h-4 w-4 rounded border-yellow-400 text-yellow-600 focus:ring-yellow-500"
                   />
-                  <span className="text-xs text-red-700 font-medium">
+                  <span className="text-xs text-yellow-800 font-medium">
                     I understand, continue anyway
                   </span>
                 </label>
@@ -353,6 +354,61 @@ const OnboardingSection = ({
         </AnimatePresence>
       </motion.div>
     </motion.div>
+
+    {/* Checked Courses Display - Shows when editing (not collapsed) */}
+    <AnimatePresence>
+      {!isCollapsed && completed.size > 0 && (
+        <motion.div
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: "auto" }}
+          exit={{ opacity: 0, height: 0 }}
+          transition={{ duration: 0.3, ease: "easeInOut" }}
+          className="mt-3 bg-white rounded-2xl border shadow-sm overflow-hidden"
+        >
+          <div className="p-4">
+            <h3 className="text-sm font-semibold text-gray-700 mb-3">
+              Currently Selected
+            </h3>
+            <div className="flex flex-wrap gap-2">
+              {Array.from(completed).sort().map((courseCode) => {
+                const course = courses.find(c => c.code === courseCode);
+                if (!course) return null;
+
+                return (
+                  <motion.div
+                    key={courseCode}
+                    initial={{ scale: 0.8, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    exit={{ scale: 0.8, opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="group relative flex items-center gap-2 px-3 py-2 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-lg transition-colors"
+                  >
+                    <div className="flex flex-col">
+                      <span className="text-xs font-semibold text-gray-900">
+                        {courseCode}
+                      </span>
+                      <span className="text-[10px] text-gray-600 line-clamp-1">
+                        {course.title}
+                      </span>
+                    </div>
+                    <button
+                      onClick={() => toggleCourse(courseCode)}
+                      className="ml-2 opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-red-100 rounded"
+                      title="Remove course"
+                    >
+                      <svg className="w-3 h-3 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  </motion.div>
+                );
+              })}
+            </div>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+    </>
   );
 };
 

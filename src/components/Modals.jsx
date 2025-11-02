@@ -174,6 +174,7 @@ export const GradeDistributionModal = ({ course, open, onClose }) => {
   const [error, setError] = useState(null);
   const [selectedSemester, setSelectedSemester] = useState("average");
   const [filterMode, setFilterMode] = useState("semester"); // "semester" or "instructor"
+  const [showAllInstructors, setShowAllInstructors] = useState(false);
 
   // Helper function to format instructor name
   const formatInstructorName = (instructor) => {
@@ -183,15 +184,18 @@ export const GradeDistributionModal = ({ course, open, onClose }) => {
     return instructor;
   };
 
-  // Helper function to display instructor list with grouped unspecified
-  const displayInstructorList = (instructorsList) => {
+  // Helper function to display instructor list with grouped unspecified and show more/less
+  const displayInstructorList = (instructorsList, showAll = false) => {
     const specifiedInstructors = instructorsList.filter(i => i !== 'Instructor Not Specified');
     const unspecifiedCount = instructorsList.length - specifiedInstructors.length;
 
     const result = [];
+    const displayLimit = 10;
+    const shouldTruncate = specifiedInstructors.length > displayLimit;
+    const instructorsToShow = (showAll || !shouldTruncate) ? specifiedInstructors : specifiedInstructors.slice(0, displayLimit);
 
     // Add specified instructors
-    specifiedInstructors.forEach((instructor, idx) => {
+    instructorsToShow.forEach((instructor, idx) => {
       result.push(
         <span key={`specified-${idx}`} className="px-2 py-0.5 bg-gray-100 rounded-full text-gray-700">
           {instructor}
@@ -208,12 +212,13 @@ export const GradeDistributionModal = ({ course, open, onClose }) => {
       );
     }
 
-    return result;
+    return { elements: result, shouldTruncate, totalCount: specifiedInstructors.length };
   };
 
   useEffect(() => {
     if (open && course) {
       fetchGradeData();
+      setShowAllInstructors(false); // Reset when modal opens
     }
   }, [open, course]);
 
@@ -642,7 +647,23 @@ export const GradeDistributionModal = ({ course, open, onClose }) => {
                             >
                               <div className="flex flex-wrap gap-2 items-center">
                                 <span className="font-medium text-gray-700">All Instructors:</span>
-                                {displayInstructorList(getAllInstructors())}
+                                {(() => {
+                                  const instructorList = getAllInstructors();
+                                  const { elements, shouldTruncate, totalCount } = displayInstructorList(instructorList, showAllInstructors);
+                                  return (
+                                    <>
+                                      {elements}
+                                      {shouldTruncate && (
+                                        <button
+                                          onClick={() => setShowAllInstructors(!showAllInstructors)}
+                                          className="px-2 py-0.5 bg-blue-100 hover:bg-blue-200 rounded-full text-blue-700 font-medium transition-colors"
+                                        >
+                                          {showAllInstructors ? 'Show Less' : `Show ${totalCount - 10} More`}
+                                        </button>
+                                      )}
+                                    </>
+                                  );
+                                })()}
                               </div>
                             </motion.div>
                           )}
@@ -656,7 +677,23 @@ export const GradeDistributionModal = ({ course, open, onClose }) => {
                             >
                               <div className="flex flex-wrap gap-2 items-center">
                                 <span className="font-medium text-gray-700">Instructors:</span>
-                                {displayInstructorList(getGroupedData()[selectedSemester].instructorsList)}
+                                {(() => {
+                                  const instructorList = getGroupedData()[selectedSemester].instructorsList;
+                                  const { elements, shouldTruncate, totalCount } = displayInstructorList(instructorList, showAllInstructors);
+                                  return (
+                                    <>
+                                      {elements}
+                                      {shouldTruncate && (
+                                        <button
+                                          onClick={() => setShowAllInstructors(!showAllInstructors)}
+                                          className="px-2 py-0.5 bg-blue-100 hover:bg-blue-200 rounded-full text-blue-700 font-medium transition-colors"
+                                        >
+                                          {showAllInstructors ? 'Show Less' : `Show ${totalCount - 10} More`}
+                                        </button>
+                                      )}
+                                    </>
+                                  );
+                                })()}
                               </div>
                             </motion.div>
                           )}

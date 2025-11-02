@@ -339,6 +339,14 @@ DEPARTMENTS = {
     'CHEM': {
         'name': 'Chemistry',
         'url': 'https://catalog.uic.edu/ucat/course-descriptions/chem/'
+    },
+    'ENGL': {
+        'name': 'English',
+        'url': 'https://catalog.uic.edu/ucat/course-descriptions/engl/'
+    },
+    'ENGR': {
+        'name': 'Engineering',
+        'url': 'https://catalog.uic.edu/ucat/course-descriptions/engr/'
     }
     # Add more departments as needed
 }

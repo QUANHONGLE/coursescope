@@ -2,9 +2,9 @@ import { useState } from "react";
 import CourseCard from "./CourseCard";
 import { ChevronDown, ChevronRight } from "lucide-react";
 
-const EligibleCourses = ({ courses, requiredCourses, electiveCourses, onAdd, onOpenDetail, onOpenGrades }) => {
-  const [requiredExpanded, setRequiredExpanded] = useState(true);
-  const [electivesExpanded, setElectivesExpanded] = useState(true);
+const EligibleCourses = ({ courses, allCourses, requiredCourses, electiveCourses, onAdd, onOpenDetail, onOpenGrades }) => {
+  const [requiredExpanded, setRequiredExpanded] = useState(false);
+  const [electivesExpanded, setElectivesExpanded] = useState(false);
   const [otherExpanded, setOtherExpanded] = useState(false);
 
   // Create sets of course codes for quick lookup
@@ -20,9 +20,8 @@ const EligibleCourses = ({ courses, requiredCourses, electiveCourses, onAdd, onO
   // Categorize courses into three groups
   const eligibleRequired = courses.filter(c => requiredCourseCodes.has(c.code));
   const eligibleElectives = courses.filter(c => electiveCourseCodes.has(c.code));
-  const eligibleOther = courses.filter(c =>
-    !requiredCourseCodes.has(c.code) && !electiveCourseCodes.has(c.code)
-  );
+  // Use all available courses for the third section (not filtered by prerequisites)
+  const allAvailableCourses = allCourses || [];
 
   const renderSection = (title, courses, expanded, setExpanded) => {
     if (courses.length === 0) return null;
@@ -82,7 +81,7 @@ const EligibleCourses = ({ courses, requiredCourses, electiveCourses, onAdd, onO
         <div className="space-y-3">
           {renderSection("Eligible Required Courses", eligibleRequired, requiredExpanded, setRequiredExpanded)}
           {renderSection("Eligible Electives", eligibleElectives, electivesExpanded, setElectivesExpanded)}
-          {renderSection("Eligible Other Courses", eligibleOther, otherExpanded, setOtherExpanded)}
+          {renderSection("All Available Courses", allAvailableCourses, otherExpanded, setOtherExpanded)}
         </div>
       )}
     </section>

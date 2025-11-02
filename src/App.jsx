@@ -306,6 +306,7 @@ export default function App() {
 
               {/* New In-Progress Selection Section */}
               {onboardingCollapsed && completedCourses !== null && (
+                <div className="mt-6">
                 <OnboardingSection // Reusing OnboardingSection for in-progress selection
                   courses={allCourses} // All courses for in-progress selection
                   onComplete={handleInProgressComplete}
@@ -317,9 +318,10 @@ export default function App() {
                   buttonText="Confirm"
                   excludeCourses={completedCourses} // Exclude already completed courses
                   showCompletedFirst={true} // Show completed courses at the top
-                  enforcePrerequisites={true} // Only show courses with prerequisites met
+                  enforcePrerequisites={false} // Show all courses, let user search
                   completedCoursesSet={completedCourses} // Pass completed courses for prerequisite checking
                 />
+                </div>
               )}
 
               <AnimatePresence>
@@ -349,6 +351,7 @@ export default function App() {
                       <div className="lg:col-span-2 space-y-6">
                         <EligibleCourses
                           courses={eligibleCourses}
+                          allCourses={filtered}
                           requiredCourses={requiredCourses}
                           electiveCourses={electiveCourses}
                           onAdd={addToPlan}

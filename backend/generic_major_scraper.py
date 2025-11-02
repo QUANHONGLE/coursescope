@@ -17,6 +17,7 @@ MAJOR_CONFIGS = {
             'Required CS': ['CS'],
             'Required Math': ['MATH', 'IE', 'STAT'],
             'Required Science': ['PHYS', 'CHEM', 'BIOS'],
+            'Required English': ['ENGL'],
             'Required Other': ['ENGR']
         },
         'elective_categories': {
