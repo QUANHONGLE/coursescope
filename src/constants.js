@@ -1,0 +1,97 @@
+export const COURSES = [
+  {
+    id: "cs141",
+    code: "CS 141",
+    title: "Program Design I",
+    credits: 3,
+    level: 100,
+    difficulty: "Light",
+    description: "Introduction to programming and problem solving.",
+    prereqChain: "None",
+    instructors: ["Smith", "Lee"],
+  },
+  {
+    id: "cs151",
+    code: "CS 151",
+    title: "Program Design II",
+    credits: 3,
+    level: 100,
+    difficulty: "Moderate",
+    description: "Data structures and OOP foundations.",
+    prereqChain: "CS 141",
+    instructors: ["Nguyen", "Patel"],
+  },
+  {
+    id: "cs251",
+    code: "CS 251",
+    title: "Data Structures",
+    credits: 4,
+    level: 200,
+    difficulty: "Challenging",
+    description: "Advanced data structures and complexity.",
+    prereqChain: "CS 141 → 151",
+    instructors: ["Khan", "Garcia"],
+  },
+  {
+    id: "cs361",
+    code: "CS 361",
+    title: "Systems Programming",
+    credits: 3,
+    level: 300,
+    difficulty: "Challenging",
+    description: "Processes, memory, concurrency, and C.",
+    prereqChain: "CS 141 → 151 → 251",
+    instructors: ["Ramirez", "Wong"],
+  },
+  {
+    id: "cs362",
+    code: "CS 362",
+    title: "Computer Design",
+    credits: 3,
+    level: 300,
+    difficulty: "Moderate",
+    description: "Computer architecture fundamentals.",
+    prereqChain: "CS 141 → 151",
+    instructors: ["Ibrahim", "Chen"],
+  },
+  {
+    id: "cs377",
+    code: "CS 377",
+    title: "Communication and Ethics",
+    credits: 3,
+    level: 300,
+    difficulty: "Light",
+    description: "Technical communication and ethical practice.",
+    prereqChain: "Sophomore standing",
+    instructors: ["Flores", "Singh"],
+  },
+  {
+    id: "cs401",
+    code: "CS 401",
+    title: "Computer Algorithms I",
+    credits: 3,
+    level: 400,
+    difficulty: "Challenging",
+    description: "Design and analysis of algorithms.",
+    prereqChain: "CS 251",
+    instructors: ["Zhao", "Martinez"],
+  },
+];
+
+export const DIFFICULTY_INFO = {
+  Light: {
+    label: "Light",
+    desc: "Higher historic A/B rates, lighter expected workload.",
+  },
+  Moderate: {
+    label: "Moderate",
+    desc: "Balanced grade trends, steady weekly effort.",
+  },
+  Challenging: {
+    label: "Challenging",
+    desc: "Lower A-rate and/or heavier weekly workload.",
+  },
+};
+
+export const LEVELS = [100, 200, 300, 400];
+export const DIFFICULTIES = ["Light", "Moderate", "Challenging"];
