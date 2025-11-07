@@ -29,6 +29,7 @@ export default function App() {
   const [onboardingCollapsed, setOnboardingCollapsed] = useState(false);
   const [inProgressSelectionCollapsed, setInProgressSelectionCollapsed] = useState(true); // New state for in-progress modal
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [skippedPlanning, setSkippedPlanning] = useState(false); // Track if user skipped planning
 
   const [detailOpen, setDetailOpen] = useState(false);
   const [gradesOpen, setGradesOpen] = useState(false);
@@ -88,6 +89,17 @@ export default function App() {
     setOnboardingCollapsed(false);
     setInProgressSelectionCollapsed(true); // Reset in-progress modal state
     setSelected([]);
+    setSkippedPlanning(false); // Reset skipped planning state
+  };
+
+  const handleSkipPlanning = () => {
+    // Skip the planning process and go straight to browsing courses
+    setCompletedCourses(new Set());
+    setInProgressCourses(new Set());
+    setOnboardingCollapsed(true); // Collapse both sections
+    setInProgressSelectionCollapsed(true);
+    setMajorConfirmed(true);
+    setSkippedPlanning(true); // Mark that planning was skipped
   };
 
   const handleOnboardingComplete = (completed) => {
@@ -136,11 +148,17 @@ export default function App() {
 
   const filtered = useMemo(() => {
     if (!allCourses.length) return [];
-    
+
     return allCourses.filter((c) => {
-      const searchHit = [c.code, c.title, c.description].some((s) =>
-        s.toLowerCase().includes(search.toLowerCase())
-      );
+      // Normalize search by removing all spaces and converting to lowercase for more flexible matching
+      const normalizedSearch = search.trim().toLowerCase().replace(/\s+/g, '');
+
+      const searchHit = normalizedSearch === '' || [c.code, c.title, c.description].some((s) => {
+        // Remove all spaces from the field value for comparison
+        const normalizedField = s.toLowerCase().replace(/\s+/g, '');
+        return normalizedField.includes(normalizedSearch);
+      });
+
       const levelHit = levelFilters.size ? levelFilters.has(c.level) : true;
       const diffHit = difficultyFilters.size
         ? difficultyFilters.has(c.difficulty)
@@ -157,38 +175,44 @@ export default function App() {
   // Filter eligible courses based on completed prerequisites
   const eligibleCourses = useMemo(() => {
     if (completedCourses === null || inProgressCourses === null) return filtered;
-    
+
+    // If user skipped planning, show all courses without prerequisite filtering
+    if (skippedPlanning) {
+      console.log("🔍 Skipped planning - showing all courses without prerequisite filtering");
+      return filtered;
+    }
+
     // Convert Sets to Arrays for easier comparison
     const completedCodesArray = Array.from(completedCourses);
     const inProgressCodesArray = Array.from(inProgressCourses);
-    
+
     // Get list of course codes already in the plan
     const selectedCodesArray = selected.map(c => c.code);
-    
+
     console.log("🔍 Filtering eligible courses...");
     console.log("🔍 Completed courses:", completedCodesArray);
     console.log("🔍 In-progress courses:", inProgressCodesArray);
     console.log("🔍 Courses in plan:", selectedCodesArray);
     console.log("🔍 Total filtered courses:", filtered.length);
-    
+
     const eligible = filtered.filter((course) => {
       // Skip courses that are already completed or in progress
       if (completedCodesArray.includes(course.code) || inProgressCodesArray.includes(course.code)) {
-        console.log(`⏭️  Skipping ${course.code} - already completed or in progress`);
+        console.log(`⏭Skipping ${course.code} - already completed or in progress`);
         return false;
       }
-      
+
       // Skip courses that are already in the plan
       if (selectedCodesArray.includes(course.code)) {
-        console.log(`📋 Skipping ${course.code} - already in plan`);
+        console.log(`Skipping ${course.code} - already in plan`);
         return false;
       }
-      
+
       // Check prerequisites using grouped logic
       // prerequisiteGroups is an array of arrays: [[A, B], [C], [D, E]]
       // Groups are AND'd together, items within a group are OR'd
       if (!course.prerequisiteGroups || course.prerequisiteGroups.length === 0) {
-        console.log(`✅ ${course.code} - no prerequisites needed`);
+        console.log(`${course.code} - no prerequisites needed`);
         return true;
       }
 
@@ -197,7 +221,7 @@ export default function App() {
 
       for (const group of course.prerequisiteGroups) {
         // For each group, at least ONE course must be completed OR in progress (OR within group)
-        const groupMet = group.some((prereq) => 
+        const groupMet = group.some((prereq) =>
           completedCodesArray.includes(prereq) || inProgressCodesArray.includes(prereq)
         );
         if (!groupMet) {
@@ -214,10 +238,10 @@ export default function App() {
 
       return prereqsMet;
     });
-    
+
     console.log("🔍 Eligible courses count:", eligible.length);
     return eligible;
-  }, [filtered, completedCourses, inProgressCourses, selected]);
+  }, [filtered, completedCourses, inProgressCourses, selected, skippedPlanning]);
 
   const addToPlan = (course) =>
     setSelected((prev) =>
@@ -251,7 +275,7 @@ export default function App() {
       ) : allCourses.length === 0 ? (
         <main className="mx-auto max-w-6xl px-4 py-6 md:py-8">
           <div className="text-center py-12 bg-red-50 border border-red-200 rounded-2xl">
-            <p className="text-red-800 font-semibold">⚠️ Failed to load courses</p>
+            <p className="text-red-800 font-semibold">Failed to load courses</p>
             <p className="mt-2 text-red-600 text-sm">Make sure the backend is running on http://localhost:5001</p>
             <button 
               onClick={fetchCourses}
@@ -263,12 +287,12 @@ export default function App() {
         </main>
       ) : !majorConfirmed ? (
         <main className="mx-auto max-w-6xl px-4 py-6 md:py-8">
-          <MajorSelection onSelectMajor={handleMajorSelect} selectedMajor={selectedMajor} />
+          <MajorSelection onSelectMajor={handleMajorSelect} selectedMajor={selectedMajor} onSkipPlanning={handleSkipPlanning} />
         </main>
       ) : (
         <div className="flex h-[calc(100vh-80px)]">
-          {/* Requirements Checklist - Fixed Left Panel */}
-          {completedCourses !== null && inProgressCourses !== null && (
+          {/* Requirements Checklist - Fixed Left Panel - Only show if user didn't skip planning */}
+          {completedCourses !== null && inProgressCourses !== null && !skippedPlanning && (
             <RequiredCoursesChecklist
               requiredCourses={requiredCourses}
               electiveCourses={electiveCourses}
@@ -296,32 +320,37 @@ export default function App() {
             }}
           >
             <div className="mx-auto max-w-6xl">
-              <OnboardingSection
-                courses={allCourses}
-                onComplete={handleOnboardingComplete}
-                completedCourses={completedCourses}
-                isCollapsed={onboardingCollapsed}
-                setIsCollapsed={setOnboardingCollapsed}
-              />
+              {/* Only show onboarding sections if user didn't skip planning */}
+              {!skippedPlanning && (
+                <>
+                  <OnboardingSection
+                    courses={allCourses}
+                    onComplete={handleOnboardingComplete}
+                    completedCourses={completedCourses}
+                    isCollapsed={onboardingCollapsed}
+                    setIsCollapsed={setOnboardingCollapsed}
+                  />
 
-              {/* New In-Progress Selection Section */}
-              {onboardingCollapsed && completedCourses !== null && (
-                <div className="mt-6">
-                <OnboardingSection // Reusing OnboardingSection for in-progress selection
-                  courses={allCourses} // All courses for in-progress selection
-                  onComplete={handleInProgressComplete}
-                  completedCourses={inProgressCourses} // Use inProgressCourses for this section
-                  isCollapsed={inProgressSelectionCollapsed}
-                  setIsCollapsed={setInProgressSelectionCollapsed}
-                  title="In Progress Courses"
-                  description="Choose all courses you are currently taking."
-                  buttonText="Confirm"
-                  excludeCourses={completedCourses} // Exclude already completed courses
-                  showCompletedFirst={true} // Show completed courses at the top
-                  enforcePrerequisites={false} // Show all courses, let user search
-                  completedCoursesSet={completedCourses} // Pass completed courses for prerequisite checking
-                />
-                </div>
+                  {/* New In-Progress Selection Section */}
+                  {onboardingCollapsed && completedCourses !== null && (
+                    <div className="mt-6">
+                    <OnboardingSection // Reusing OnboardingSection for in-progress selection
+                      courses={allCourses} // All courses for in-progress selection
+                      onComplete={handleInProgressComplete}
+                      completedCourses={inProgressCourses} // Use inProgressCourses for this section
+                      isCollapsed={inProgressSelectionCollapsed}
+                      setIsCollapsed={setInProgressSelectionCollapsed}
+                      title="In Progress Courses"
+                      description="Choose all courses you are currently taking."
+                      buttonText="Confirm"
+                      excludeCourses={completedCourses} // Exclude already completed courses
+                      showCompletedFirst={true} // Show completed courses at the top
+                      enforcePrerequisites={false} // Show all courses, let user search
+                      completedCoursesSet={completedCourses} // Pass completed courses for prerequisite checking
+                    />
+                    </div>
+                  )}
+                </>
               )}
 
               <AnimatePresence>
@@ -331,7 +360,7 @@ export default function App() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -20 }}
                     transition={{ duration: 0.3 }}
-                    className="space-y-6"
+                    className="mt-6 space-y-6"
                   >
                     <div>
                       <FilterBar
@@ -357,6 +386,7 @@ export default function App() {
                           onAdd={addToPlan}
                           onOpenDetail={openDetail}
                           onOpenGrades={openGrades}
+                          skippedPlanning={skippedPlanning}
                         />
                       </div>
                       <div className="lg:col-span-1">

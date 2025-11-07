@@ -2,7 +2,7 @@ import { useState } from "react";
 import CourseCard from "./CourseCard";
 import { ChevronDown, ChevronRight } from "lucide-react";
 
-const EligibleCourses = ({ courses, allCourses, requiredCourses, electiveCourses, onAdd, onOpenDetail, onOpenGrades }) => {
+const EligibleCourses = ({ courses, allCourses, requiredCourses, electiveCourses, onAdd, onOpenDetail, onOpenGrades, skippedPlanning = false }) => {
   const [requiredExpanded, setRequiredExpanded] = useState(false);
   const [electivesExpanded, setElectivesExpanded] = useState(false);
   const [otherExpanded, setOtherExpanded] = useState(false);
@@ -66,22 +66,23 @@ const EligibleCourses = ({ courses, allCourses, requiredCourses, electiveCourses
   return (
     <section className="space-y-3">
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold">Eligible Courses</h2>
+        <h2 className="text-lg font-semibold">
+          {skippedPlanning ? "All Courses" : "Eligible Courses"}
+        </h2>
         <span className="text-sm text-gray-500">
-          {courses.length} total result{courses.length !== 1 ? "s" : ""}
+          {allAvailableCourses.length} total result{allAvailableCourses.length !== 1 ? "s" : ""}
         </span>
       </div>
 
-      {courses.length === 0 ? (
+      {allAvailableCourses.length === 0 ? (
         <div className="rounded-xl border bg-white p-6 text-sm text-gray-600">
-          No courses match your filters. Try clearing some filters or revising
-          your completed courses.
+          No courses match your filters. Try clearing some filters.
         </div>
       ) : (
         <div className="space-y-3">
-          {renderSection("Eligible Required Courses", eligibleRequired, requiredExpanded, setRequiredExpanded)}
-          {renderSection("Eligible Electives", eligibleElectives, electivesExpanded, setElectivesExpanded)}
-          {renderSection("All Available Courses", allAvailableCourses, otherExpanded, setOtherExpanded)}
+          {!skippedPlanning && renderSection("Eligible Required Courses", eligibleRequired, requiredExpanded, setRequiredExpanded)}
+          {!skippedPlanning && renderSection("Eligible Electives", eligibleElectives, electivesExpanded, setElectivesExpanded)}
+          {renderSection(skippedPlanning ? "All Courses" : "All Available Courses", allAvailableCourses, otherExpanded, setOtherExpanded)}
         </div>
       )}
     </section>

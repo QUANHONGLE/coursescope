@@ -2,7 +2,7 @@
 
 A course planning tool for UIC students with prerequisite tracking, grade distributions, and major requirements.
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 - Python 3.8+
@@ -51,7 +51,7 @@ A course planning tool for UIC students with prerequisite tracking, grade distri
 5. **Open Browser**
    Navigate to `http://localhost:5173`
 
-## 📊 Data Setup
+## Data Setup
 
 ### Database Structure
 The system uses SQLite (`uic_courses.db`) with the following tables:
@@ -129,7 +129,7 @@ python3 update_prerequisite_logic.py
 
 This script helps convert simple AND/OR logic to grouped prerequisites.
 
-## 🏗️ Architecture
+## Architecture
 
 ### Backend (`/backend`)
 - **Framework:** Flask
@@ -175,7 +175,7 @@ This script helps convert simple AND/OR logic to grouped prerequisites.
 ### Grades
 - `GET /api/courses/<code>/grades` - Get grade distribution data
 
-## 🎨 Features
+## Features
 
 ### Prerequisite System
 - **Grouped Logic:** Supports complex prerequisites like "(CS 141 OR CS 107) AND CS 151 AND CS 211"
@@ -201,7 +201,7 @@ This script helps convert simple AND/OR logic to grouped prerequisites.
 - **Search:** Search by code or title
 - **Eligibility:** Only show courses you can take based on prerequisites
 
-## 🧪 Testing
+## Testing
 
 ### Backend API Testing
 ```bash
@@ -246,7 +246,7 @@ sqlite3 uic_courses_test.db "SELECT * FROM major_requirements"
 rm uic_courses_test.db
 ```
 
-## 📝 Development Notes
+## Development Notes
 
 ### Adding a New Major
 
@@ -333,13 +333,13 @@ lsof uic_courses.db
    DATABASE_PATH=/path/to/uic_courses.db
    ```
 
-## 📚 Documentation
+## Documentation
 
 - [Backend Scraper Guide](backend/SCRAPER_README.md) - Detailed scraper documentation
 - [API Documentation](backend/api.py) - View source for API details
 - [Database Schema](backend/) - Check create_*_tables() functions
 
-## 🤝 Contributing
+## Contributing
 
 When adding features:
 1. Maintain modular architecture
@@ -348,7 +348,7 @@ When adding features:
 4. Document configuration changes
 5. Test scrapers in test mode first
 
-## 📦 Dependencies
+## Dependencies
 
 ### Backend
 - Flask - Web framework

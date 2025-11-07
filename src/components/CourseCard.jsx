@@ -24,8 +24,6 @@ const CourseCard = ({ course, courseType, onAdd, onOpenDetail, onOpenGrades }) =
 
   // Get background color based on course type
   const getBackgroundColor = () => {
-    if (courseType === 'required') return 'bg-blue-50';
-    if (courseType === 'elective') return 'bg-teal-50';
     return 'bg-white';
   };
 
