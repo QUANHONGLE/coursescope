@@ -11,7 +11,7 @@ import DiagnosticPanel from "./components/DiagnosticPanel";
 import RequiredCoursesChecklist from "./components/RequiredCoursesChecklist";
 import { useDebounce } from "./hooks/useDebounce";
 
-const API_URL = "http://127.0.0.1:5001/api";
+const API_URL = "/api";
 
 export default function App() {
   const [search, setSearch] = useState("");
@@ -75,7 +75,7 @@ export default function App() {
 
     // Fetch required courses for this major
     try {
-      const response = await fetch(`${API_URL}/majors/${major.id}/requirements`);
+      const response = await fetch(`${API_URL}/major-requirements?id=${major.id}`);
       const data = await response.json();
       setRequiredCourses(data.requiredCourses);
       setElectiveCourses(data.electiveCourses || []);

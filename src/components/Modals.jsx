@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import ModalShell from "./ModalShell";
 import { Pill } from "./ui";
 
-const API_URL = "http://127.0.0.1:5001/api";
+const API_URL = "/api";
 
 const highlightCourseCodes = (text) => {
   if (!text) return text;
@@ -229,7 +229,7 @@ export const GradeDistributionModal = ({ course, open, onClose }) => {
     setError(null);
 
     try {
-      const response = await fetch(`${API_URL}/courses/${encodeURIComponent(course.code)}/grades`);
+      const response = await fetch(`${API_URL}/grades?code=${encodeURIComponent(course.code)}`);
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);

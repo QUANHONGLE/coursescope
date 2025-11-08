@@ -7,7 +7,7 @@ const MajorSelection = ({ onSelectMajor, selectedMajor, onSkipPlanning }) => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetch("http://localhost:5001/api/majors")
+    fetch("/api/majors")
       .then(res => res.json())
       .then(data => {
         // Add descriptions for each major/concentration
