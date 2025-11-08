@@ -77,7 +77,7 @@ const FilterBar = ({
         </div>
         <div className="col-span-1">
           <label className="text-xs font-medium text-gray-600">
-            Course Word Load
+            Course Work Load
           </label>
           <div className="mt-1 flex flex-wrap gap-2">
             {DIFFICULTIES.map((d) => (
