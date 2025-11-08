@@ -47,7 +47,7 @@ Every push to `main` branch automatically deploys to production via Vercel.
 
 1. **Clone the repository**
    ```bash
-   git clone <your-repo-url>
+   git clone https://github.com/QUANHONGLE/coursescope.git
    cd coursescope
    ```
 
@@ -56,42 +56,38 @@ Every push to `main` branch automatically deploys to production via Vercel.
    npm install
    ```
 
-3. **Install backend dependencies** (for local testing)
+3. **Install backend dependencies**
    ```bash
    cd backend
-   pip install -r requirements.txt
+   pip install flask flask-cors flask-caching
+   cd ..
    ```
 
 4. **Run development servers**
 
-   **Option 1: Local Backend (for development)**
-
-   Terminal 1 - Backend:
+   **Terminal 1 - Start Flask Backend:**
    ```bash
-   cd backend
-   python3 api.py
+   npm run backend
    ```
    Backend runs on `http://localhost:5001`
 
-   Terminal 2 - Frontend:
+   **Terminal 2 - Start Frontend:**
    ```bash
    npm run dev
    ```
-   Frontend runs on `http://localhost:5173`
+   Frontend runs on `http://localhost:5173` with API proxy to Flask
 
-   **Option 2: Use Production API (faster setup)**
+### How It Works
 
-   Just run:
-   ```bash
-   npm run dev
-   ```
-   Frontend will use `/api` endpoints which can proxy to production.
+- **Local Development**: Vite proxies `/api/*` requests to Flask backend (`localhost:5001`)
+- **Production (Vercel)**: Uses serverless functions in `api/` folder
+- **No conflicts**: Vite proxy only active during `npm run dev`, production uses Vercel functions
 
 ## 📁 Project Structure
 
 ```
 coursescope/
-├── api/                          # Vercel serverless functions
+├── api/                          # Vercel serverless functions (production)
 │   ├── _db.py                   # Database utilities
 │   ├── majors.py                # GET /api/majors
 │   ├── major-requirements.py    # GET /api/major-requirements?id=X
@@ -100,7 +96,7 @@ coursescope/
 │   ├── eligible.py              # POST /api/eligible
 │   ├── grades.py                # GET /api/grades?code=CS101
 │   └── uic_courses.db          # SQLite database
-├── backend/                     # Original Flask API (for local dev)
+├── backend/                     # Flask API (local development)
 │   ├── api.py                  # Flask server
 │   ├── generic_major_scraper.py # Major requirements scraper
 │   ├── generic_course_scraper.py # Course catalog scraper
@@ -110,6 +106,8 @@ coursescope/
 │   ├── components/
 │   ├── App.jsx
 │   └── main.jsx
+├── vite.config.js               # Vite config with proxy for local dev
+├── start-backend.sh             # Script to start Flask backend
 └── package.json
 ```
 

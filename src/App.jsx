@@ -280,8 +280,8 @@ export default function App() {
         <main className="mx-auto max-w-6xl px-4 py-6 md:py-8">
           <div className="text-center py-12 bg-red-50 border border-red-200 rounded-2xl">
             <p className="text-red-800 font-semibold">Failed to load courses</p>
-            <p className="mt-2 text-red-600 text-sm">Make sure the backend is running on http://localhost:5001</p>
-            <button 
+            <p className="mt-2 text-red-600 text-sm">Unable to connect to the API</p>
+            <button
               onClick={fetchCourses}
               className="mt-4 px-4 py-2 bg-red-600 text-white rounded-xl hover:bg-red-700"
             >
