@@ -2,7 +2,7 @@
 
 A modern course planning application for UIC students with prerequisite tracking, grade distributions, and major requirements visualization.
 
-**Live Demo:** [https://coursescope.vercel.app](https://coursescope.vercel.app) *(replace with your actual Vercel URL)*
+**Live Demo:** https://coursescope-1myl-git-main-quanhongles-projects.vercel.app
 
 ## 🚀 Features
 
