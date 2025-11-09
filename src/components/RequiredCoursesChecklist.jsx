@@ -233,7 +233,7 @@ const RequiredCoursesChecklist = ({
                             </div>
 
                             {/* Prerequisites Warning */}
-                            {status === "pending" && course.prerequisiteGroups && course.prerequisiteGroups.length > 0 && (
+                            {(status === "pending" || status === "in-progress") && course.prerequisiteGroups && course.prerequisiteGroups.length > 0 && (
                               <div className="mt-1">
                                 <div className="text-[10px] text-gray-500 mb-0.5">
                                   Prereq:
@@ -368,7 +368,7 @@ const RequiredCoursesChecklist = ({
                                 </div>
 
                                 {/* Prerequisites Warning */}
-                                {status === "pending" && course.prerequisiteGroups && course.prerequisiteGroups.length > 0 && (
+                                {(status === "pending" || status === "in-progress") && course.prerequisiteGroups && course.prerequisiteGroups.length > 0 && (
                                   <div className="mt-1">
                                     <div className="text-[10px] text-gray-500 mb-0.5">
                                       Prereq:

@@ -83,7 +83,8 @@ const OnboardingSection = ({
         // Check each group - ALL groups must be satisfied (AND between groups)
         for (const group of course.prerequisiteGroups) {
           // Within each group, at least ONE must be completed (OR within group)
-          const groupMet = group.some(prereq => completed.has(prereq));
+          // Check both the current selection AND excluded courses (e.g., already completed courses)
+          const groupMet = group.some(prereq => completed.has(prereq) || excludeCourses.has(prereq));
           if (!groupMet) {
             missingGroups.push(group);
           }

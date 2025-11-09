@@ -11,7 +11,7 @@ import DiagnosticPanel from "./components/DiagnosticPanel";
 import RequiredCoursesChecklist from "./components/RequiredCoursesChecklist";
 import { useDebounce } from "./hooks/useDebounce";
 
-const API_URL = "/api";
+const API_URL = import.meta.env.VITE_API_URL || "/api";
 
 export default function App() {
   const [search, setSearch] = useState("");
@@ -75,7 +75,7 @@ export default function App() {
 
     // Fetch required courses for this major
     try {
-      const response = await fetch(`${API_URL}/major-requirements?id=${major.id}`);
+      const response = await fetch(`${API_URL}/majors/${major.id}/requirements`);
       const data = await response.json();
       setRequiredCourses(data.requiredCourses);
       setElectiveCourses(data.electiveCourses || []);
@@ -89,11 +89,12 @@ export default function App() {
   const handleChangeMajor = () => {
     setMajorConfirmed(false);
     setCompletedCourses(null);
-    setInProgressCourses(null); // Reset in-progress courses
+    setInProgressCourses(null); // Reset to null to show onboarding for new major
     setOnboardingCollapsed(false);
     setInProgressSelectionCollapsed(true); // Reset in-progress modal state
     setSelected([]);
     setSkippedPlanning(false); // Reset skipped planning state
+    // Don't reset requiredCourses and electiveCourses - they will be fetched when a new major is selected
   };
 
   const handleSkipPlanning = () => {
@@ -112,6 +113,7 @@ export default function App() {
     console.log("📋 Size/Length:", completed.size || completed.length);
     console.log("📋 Values:", Array.from(completed));
     setCompletedCourses(completed);
+    setInProgressCourses(new Set()); // Initialize in-progress as empty Set instead of null
     setOnboardingCollapsed(true);
     setInProgressSelectionCollapsed(false); // Show in-progress modal after onboarding
   };

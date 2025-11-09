@@ -90,7 +90,7 @@ coursescope/
 ├── api/                          # Vercel serverless functions (production)
 │   ├── _db.py                   # Database utilities
 │   ├── majors.py                # GET /api/majors
-│   ├── major-requirements.py    # GET /api/major-requirements?id=X
+│   ├── majors/[id]/requirements.py  # GET /api/majors/<id>/requirements
 │   ├── courses.py               # GET /api/courses
 │   ├── course.py                # GET /api/course?code=CS101
 │   ├── eligible.py              # POST /api/eligible
@@ -117,7 +117,7 @@ All endpoints are available at `/api/*`:
 
 ### Majors
 - `GET /api/majors` - List all majors and concentrations
-- `GET /api/major-requirements?id=<id>` - Get requirements for a specific major
+- `GET /api/majors/<id>/requirements` - Get requirements for a specific major
 
 ### Courses
 - `GET /api/courses` - Get all courses with prerequisites and difficulty
